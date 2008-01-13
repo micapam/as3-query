@@ -14,19 +14,20 @@ package {
 				align: "TL"
 			});
 
+			// create 25 boxes
 			for(var i:int = 0; i < 25; i++) {
-				$(RoundRect)
-					.attr({
-						x: (i % 5) * 60 + 50,
-						y: Math.floor(i / 5) * 60 + 50,
-						width: 50,
-						height: 50,
-						centered: true
+				$(RoundRect)   // $(ClassName) equals $(new ClassName())
+					.attr({    // Set properties
+						x: (i % 5) * 50,
+						y: Math.floor(i / 5) * 50,
+						width: 40,
+						height: 40
 					})
 					.appendTo(this);
 			}
 
 			function animate(f:Boolean):void {
+				// Select 'RoundRect' elements using CSS selector
 				$("RoundRect:" + (f ? "odd" : "even"))
 					.addTween({
 						rotation: 90,
@@ -43,6 +44,7 @@ package {
 						delay: 0.9,
 						transition: "easeOutElastic",
 						onComplete: function():void {
+							// restore the rotation and call again.
 							this.rotation = 0;
 							animate(!f);
 						}

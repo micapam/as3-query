@@ -12,9 +12,10 @@ package {
 				frameRate: 2
 			});
 
+			// create 25 boxes
 			for(var i:int = 0; i < 25; i++) {
-				$(RoundRect)
-					.attr({
+				$(RoundRect)   // $(ClassName) equals $(new ClassName())
+					.attr({    // Set properties
 						x: (i % 5) * 50,
 						y: Math.floor(i / 5) * 50,
 						width: 40,
@@ -23,6 +24,7 @@ package {
 					.appendTo(this);
 			}
 
+			// add enterFrame event handler
 			$(stage).enterFrame(function(event:Event):void {
 				$("RoundRect").attr("color", function(...args):uint {
 					return Math.random() * 0xffffff;
