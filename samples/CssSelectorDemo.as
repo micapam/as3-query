@@ -1,20 +1,21 @@
-package
-{
+package {
 	import flash.display.*;
-	import flash.text.*; TextField;
-	import flash.events.*;
-	import flash.utils.*;
+	import flash.text.TextField;
+	import flash.text.StyleSheet;
+	import flash.events.Event;
 	import flash.filters.GlowFilter;
 	import com.nitoyon.as3query.*;
 
+	// import shapes and force them to be linked in the SWF file.
 	import test.Circle; Circle;
 	import test.Rect; Rect;
 	import test.RoundRect; RoundRect;
 	import test.Polygon; Polygon;
 	import test.Star; Star;
 
-	public class CssSelectorDemo extends Sprite
-	{
+	[SWF(width="420", height="430")]
+	public class CssSelectorDemo extends Sprite {
+		// constructor
 		public function CssSelectorDemo() {
 			$(stage).attr({scaleMode: "noScale", align: "TL"});
 
@@ -23,17 +24,20 @@ package
 
 			// construct CSS Test List
 			as3Query.each(cssTest, function(i:int, css:String):void {
-				$(TextField)   // $(ClassName) == $(new ClassName())
-					.attr({    // set attributes by Object
-						text: css,
-						width: Number($("#ex").attr("width")) - 1, 
-						height: 20,
+				$(TextField)     // $(ClassName) equals $(new ClassName())
+					.css("p", {  // set CSS
+						fontFamily: "sans-serif"
+					})
+					.attr({      // set the attributes
+						text: "<p>" + css + "</p>",
+						width: Number($("#ex").attr("width")) - 2, 
+						height: 19,
 						x: 1,
 						y: i * 20 + 1,
 						selectable: false,
 						backgroundColor: 0xaaaaff
 					})
-					.hover(    // hover event
+					.hover(      // hover event (over and out)
 						function(event:Event):void {
 							this.background = true;
 						},
@@ -41,7 +45,7 @@ package
 							this.background = false;
 						}
 					)
-					.click(    // click event
+					.click(      // click event
 						function(event:Event):void {
 							$("#q").text(this.text);
 							changeHandler(null);
@@ -55,6 +59,7 @@ package
 			changeHandler(null);
 		}
 
+		// TextField change handler
 		private function changeHandler(event:Event):void {
 			var f:GlowFilter = new GlowFilter();
 			$("*").attr("filters", []);
@@ -70,14 +75,18 @@ package
 			"Circle:nth(1)", "Circle:first", "Circle:even"
 		];
 
-		// View XML
+		// An XML that markups the positions and properties of shapes and TextField.
 		private var xml:XML = 
 			<test.Rect width="400" height="410" x="10" y="10">
 				<!--input space-->
 				<flash.text.TextField 
+					text="Type CSS Selector:"
+					x="10" y="10" width="100" height="20" selectable="false"/>
+
+				<flash.text.TextField 
 					id="q" type="input"
 					text="RoundRect"
-					x="10" y="10" width="380" height="20" border="true"/>
+					x="120" y="10" width="270" height="20" border="true"/>
 
 				<!--shapes-->
 				<test.Rect x="20"  y="50" width="100" height="100" color="0xcccccc">
@@ -120,7 +129,7 @@ package
 				<!--examples-->
 				<test.Rect
 					id="ex"
-					x="280" y="50" width="100" height="340" color="0xeeeeff"/>
+					x="270" y="50" width="120" height="340" color="0xeeeeff"/>
 			</test.Rect>;
 	}
 }

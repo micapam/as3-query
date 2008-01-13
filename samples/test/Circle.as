@@ -2,9 +2,9 @@ package test
 {
 	public class Circle extends Base
 	{
-		internal override function drawShape():void
+		internal override function drawShape(offsetX:Number, offsetY:Number):void
 		{
-			graphics.drawEllipse(0, 0, width, height);
+			graphics.drawEllipse(offsetX, offsetY, width, height);
 		}
 	}
 }

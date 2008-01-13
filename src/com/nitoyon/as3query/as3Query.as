@@ -1,14 +1,17 @@
 package com.nitoyon.as3query {
-import flash.utils.Proxy;
-import flash.utils.flash_proxy;
-import flash.utils.getDefinitionByName;
-import flash.utils.getQualifiedClassName;
-import flash.utils.Dictionary;
+
 import flash.events.Event;
-import flash.net.registerClassAlias;
 import flash.display.DisplayObject;
 import flash.display.DisplayObjectContainer;
 import flash.display.Stage;
+import flash.net.registerClassAlias;
+import flash.text.StyleSheet;
+import flash.text.TextField;
+import flash.utils.Dictionary;
+import flash.utils.flash_proxy;
+import flash.utils.getDefinitionByName;
+import flash.utils.getQualifiedClassName;
+import flash.utils.Proxy;
 
 public class as3Query extends Proxy {
 
@@ -24,7 +27,7 @@ public class as3Query extends Proxy {
 		setArray( array );
 	}
 
-	// AS3 specific implementation: stage
+	// stage is an AS3 specific implementation
 	private static var _stage:Stage;
 	static internal function set stage(value:Stage):void {
 		if ( _stage ) {
@@ -149,7 +152,7 @@ public class as3Query extends Proxy {
 		return _array.indexOf( obj );
 	}
 
-	public function attr(key:Object, value:Object = null, type:String = ""):Object {
+	public function attr(key:Object, value:Object = null, type:String = null):Object {
 		var obj:Object = key;
 
 		// Look for the case where we're accessing a style value
@@ -165,17 +168,17 @@ public class as3Query extends Proxy {
 		return each(function(index:int, val:Object):void{
 			// Set all the styles
 			for ( var prop:String in obj )
-				as3Query.attr(
+				as3Query[type || "attr"](
 					this,
 					prop, as3Query.prop(this, obj[prop], type, index, prop)
 				);
 		});
 	}
 
-/*	css: function( key, value ) {
-		return this.attr( key, value, "curCSS" );
-	},
-*/
+	public function css( key:String, value:Object = null ):Object {
+		return attr( key, value, "css" );
+	}
+
 	public function text(e:Object = null):Object {
 		if(e != null) {
 			return each(function(index:int, val:Object):void{
@@ -632,7 +635,7 @@ public class as3Query extends Proxy {
 	static public function prop(elem:Object, value:Object, type:Object, index:int, prop:Object):Object {
 		// Handle executable functions
 		if(as3Query.isFunction(value))
-			value = Function(value).call(elem, [index]);
+			value = value.call(elem, [index]);
 
 		// Handle passing in a number to a CSS property
 		return value;
@@ -669,135 +672,31 @@ public class as3Query extends Proxy {
 		f.apply( e, [] );
 		for ( var i in o )
 			e.style[i] = e.style["old"+i];
-	},
+	},*/
 
-	css: function(e,p) {
-		if ( p == "height" || p == "width" ) {
-			var old = {}, oHeight, oWidth, d = ["Top","Bottom","Right","Left"];
-
-			as3Query.each( d, function(){
-				old["padding" + this] = 0;
-				old["border" + this + "Width"] = 0;
-			});
-
-			as3Query.swap( e, old, function() {
-				if ( as3Query(e).is(':visible') ) {
-					oHeight = e.offsetHeight;
-					oWidth = e.offsetWidth;
-				} else {
-					e = as3Query(e.cloneNode(true))
-						.find(":radio").removeAttr("checked").end()
-						.css({
-							visibility: "hidden", position: "absolute", display: "block", right: "0", left: "0"
-						}).appendTo(e.parentNode)[0];
-
-					var parPos = as3Query.css(e.parentNode,"position") || "static";
-					if ( parPos == "static" )
-						e.parentNode.style.position = "relative";
-
-					oHeight = e.clientHeight;
-					oWidth = e.clientWidth;
-
-					if ( parPos == "static" )
-						e.parentNode.style.position = "static";
-
-					e.parentNode.removeChild(e);
-				}
-			});
-
-			return p == "height" ? oHeight : oWidth;
+	static public function css(e:DisplayObject, p:String, value:Object = null):Object {
+		if ( value != null ) {
+			if ( e is TextField ) {
+				var tf:TextField = TextField(e);
+				tf.styleSheet = tf.styleSheet || new StyleSheet();
+				if(value is String)
+					tf.styleSheet.parseCSS(value.toString());
+				else
+					tf.styleSheet.setStyle( p, as3Query.extend(as3Query.curCSS( e, p) || {}, value) );
+			}
 		}
 
 		return as3Query.curCSS( e, p );
-	},
+	}
 
-	curCSS: function(elem, prop, force) {
-		var ret, stack = [], swap = [];
-
-		// A helper method for determining if an element's values are broken
-		function color(a){
-			if ( !as3Query.browser.safari )
-				return false;
-
-			var ret = document.defaultView.getComputedStyle(a,null);
-			return !ret || ret.getPropertyValue("color") == "";
+	static private function curCSS(elem:DisplayObject, prop:String, force:Boolean = false):Object {
+		if (elem is TextField) {
+			var tf:TextField = TextField(elem);
+			return tf.styleSheet ? tf.styleSheet.getStyle(prop) : null;
 		}
+		return null;
+	}
 
-		if (prop == "opacity" && as3Query.browser.msie) {
-			ret = as3Query.attr(elem.style, "opacity");
-			return ret == "" ? "1" : ret;
-		}
-		
-		if (prop.match(/float/i))
-			prop = styleFloat;
-
-		if (!force && elem.style[prop])
-			ret = elem.style[prop];
-
-		else if (document.defaultView && document.defaultView.getComputedStyle) {
-
-			if (prop.match(/float/i))
-				prop = "float";
-
-			prop = prop.replace(/([A-Z])/g,"-$1").toLowerCase();
-			var cur = document.defaultView.getComputedStyle(elem, null);
-
-			if ( cur && !color(elem) )
-				ret = cur.getPropertyValue(prop);
-
-			// If the element isn't reporting its values properly in Safari
-			// then some display: none elements are involved
-			else {
-				// Locate all of the parent display: none elements
-				for ( var a = elem; a && color(a); a = a.parentNode )
-					stack.unshift(a);
-
-				// Go through and make them visible, but in reverse
-				// (It would be better if we knew the exact display type that they had)
-				for ( a = 0; a < stack.length; a++ )
-					if ( color(stack[a]) ) {
-						swap[a] = stack[a].style.display;
-						stack[a].style.display = "block";
-					}
-
-				// Since we flip the display style, we have to handle that
-				// one special, otherwise get the value
-				ret = prop == "display" && swap[stack.length-1] != null ?
-					"none" :
-					document.defaultView.getComputedStyle(elem,null).getPropertyValue(prop) || "";
-
-				// Finally, revert the display styles back
-				for ( a = 0; a < swap.length; a++ )
-					if ( swap[a] != null )
-						stack[a].style.display = swap[a];
-			}
-
-			if ( prop == "opacity" && ret == "" )
-				ret = "1";
-
-		} else if (elem.currentStyle) {
-			var newProp = prop.replace(/\-(\w)/g,function(m,c){return c.toUpperCase();});
-			ret = elem.currentStyle[prop] || elem.currentStyle[newProp];
-
-			// From the awesome hack by Dean Edwards
-			// http://erik.eae.net/archives/2007/07/27/18.54.15/#comment-102291
-
-			// If we're not dealing with a regular pixel number
-			// but a number that has a weird ending, we need to convert it to pixels
-			if ( !/^\d+(px)?$/i.test(ret) && /^\d/.test(ret) ) {
-				var style = elem.style.left;
-				var runtimeStyle = elem.runtimeStyle.left;
-				elem.runtimeStyle.left = elem.currentStyle.left;
-				elem.style.left = ret || 0;
-				ret = elem.style.pixelLeft + "px";
-				elem.style.left = style;
-				elem.runtimeStyle.left = runtimeStyle;
-			}
-		}
-
-		return ret;
-	},
-*/
 	static public function clean(a:Object):Array {
 		var r:Array = [];
 
@@ -1012,18 +911,16 @@ public class as3Query extends Proxy {
 		});
 	}
 
-/*	empty: function() {
-		// Clean up the cache
-		jQuery("*", this).each(function(){ jQuery.removeData(this); });
+	public function empty():as3Query {
+		return each( function( ...args ):void {
+			// Clean up the cache
+			as3Query.create("*", this).each(function(...args):void{ as3Query.removeData(this); });
 
-		while ( this.firstChild )
-			this.removeChild( this.firstChild );
+			var c:DisplayObjectContainer = this as DisplayObjectContainer;
+			while ( c && c.numChildren )
+				c.removeChildAt(0);
+		});
 	}
-}, function(i,n){
-	jQuery.fn[ i ] = function() {
-		return this.each( n, arguments );
-	};
-});*/
 
 	//--------------------------------------------------------------------------
 	//
@@ -1037,8 +934,8 @@ public class as3Query extends Proxy {
 	static private const quickClass:RegExp = new RegExp("^([#.]?)(" + chars + "*)");
 
 	static private const expr:Object = {
-		"": function(a:DisplayObject,i:int, m:Array, r:Array):Boolean{return m[2]=='*'||Dom.nodeNameCmp(a,m[2])},
-//		"#": function(a:DisplayObject,i:int){return a.getAttribute('id')==m[2]},
+		"":  function(a:DisplayObject,i:int, m:Array, r:Array):Boolean{return m[2]=='*'||Dom.nodeNameCmp(a,m[2])},
+		"#": function(a:DisplayObject,i:int, m:Array, r:Array):Boolean{return as3Query.data(a, "id")==m[2]},
 		":": {
 			// Position Checks
 			lt:    function(a:DisplayObject,i:int, m:Array, r:Array):Boolean{return i<m[3]-0},
@@ -1227,13 +1124,12 @@ public class as3Query extends Proxy {
 
 					// Try to do a global search by ID, where we can
 					if ( m[1] == "#" ) {//&& elem && elem.getElementById && !as3Query.isXMLDoc(elem) ) {
-						throw new Error("not implemented");
 						// Optimization for HTML document case
-						//var oid:DisplayObject = elem.getElementById(m[2]);
+						var oid:DisplayObject = Dom.getElementById(m[2], elem);
 						
 						// Do a quick check for node name (where applicable) so
 						// that div#foo searches will be really fast
-						//ret = r = oid && (!m[3] || as3Query.nodeName(oid, m[3])) ? [oid] : [];
+						ret = r = oid && (!m[3] || Dom.nodeNameCmp(oid, m[3])) ? [oid] : [];
 					} else {
 						// We need to find all descendant elements
 						for ( i = 0; ret[i]; i++ ) {
@@ -1512,21 +1408,12 @@ public class as3Query extends Proxy {
 
 		// A private function for handling mouse 'hovering'
 		function handleHover(e:Event):Object {
-			// Check if mouse(over|out) are still within the same parent element
-			//var p = e.relatedTarget;
-	
-			// Traverse up the tree
-			//while ( p && p != this ) try { p = p.parentNode; } catch(e) { p = this; };
-			
-			// If we actually just moused on to a sub-element, ignore it
-			//if ( p == this ) return false;
-			
 			// Execute the right function
-			return (e.type == "mouseOver" ? f : g).apply(this, [e]);
+			return (e.type == "rollOver" ? f : g).apply(this, [e]);
 		}
-		
+
 		// Bind the function to the two event listeners
-		return this.mouseover(handleHover).mouseout(handleHover);
+		return this.bind("rollOver", handleHover).bind("rollOut", handleHover);
 	}
 
 	public function focusOut    ( f:Function = null):as3Query { return eventImpl("focusOut", f);}

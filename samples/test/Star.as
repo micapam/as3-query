@@ -18,17 +18,17 @@ package test
 			draw();
 		}
 
-		internal override function drawShape():void
+		internal override function drawShape(offsetX:Number, offsetY:Number):void
 		{
-			graphics.moveTo(width / 2, 0);
+			graphics.moveTo(offsetX + width / 2, offsetY);
 			for(var i:int = 0; i < corner; i++)
 			{
 				var rad:Number = Math.PI / corner * (2 * i + 1);
-				graphics.lineTo(width  / 2 * (1 + Math.sin(rad) * ratio), 
-				                height / 2 * (1 - Math.cos(rad) * ratio));
+				graphics.lineTo(offsetX + width  / 2 * (1 + Math.sin(rad) * ratio), 
+				                offsetY + height / 2 * (1 - Math.cos(rad) * ratio));
 				rad = Math.PI / corner * (2 * i + 2);
-				graphics.lineTo(width  / 2 * (1 + Math.sin(rad)), 
-				                height / 2 * (1 - Math.cos(rad)));
+				graphics.lineTo(offsetX + width  / 2 * (1 + Math.sin(rad)), 
+				                offsetY + height / 2 * (1 - Math.cos(rad)));
 			}
 		}
 	}

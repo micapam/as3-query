@@ -10,14 +10,14 @@ package test
 			draw();
 		}
 
-		internal override function drawShape():void
+		internal override function drawShape(offsetX:Number, offsetY:Number):void
 		{
-			graphics.moveTo(width / 2, 0);
+			graphics.moveTo(offsetX + width / 2, offsetY);
 			for(var i:int = 1; i < corner; i++)
 			{
 				var rad:Number = 2 * Math.PI / corner * i;
-				graphics.lineTo(width  / 2 * (1 + Math.sin(rad)), 
-				                height / 2 * (1 - Math.cos(rad)));
+				graphics.lineTo(offsetX + width  / 2 * (1 + Math.sin(rad)), 
+				                offsetY + height / 2 * (1 - Math.cos(rad)));
 			}
 		}
 	}

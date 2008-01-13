@@ -1,8 +1,9 @@
 package com.nitoyon.as3query {
-import flash.utils.Dictionary;
+
 import flash.display.DisplayObject;
 import flash.events.IEventDispatcher;
 import flash.events.Event;
+import flash.utils.Dictionary;
 
 internal class as3QueryEvent {
 	static private var triggered:Boolean = false;

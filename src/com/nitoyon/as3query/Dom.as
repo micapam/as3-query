@@ -1,8 +1,9 @@
 package com.nitoyon.as3query {
-import flash.utils.getQualifiedClassName;
-import flash.utils.Dictionary;
+
 import flash.display.DisplayObject;
 import flash.display.DisplayObjectContainer;
+import flash.utils.getQualifiedClassName;
+import flash.utils.Dictionary;
 
 public class Dom {
 	static public function firstChild( node:DisplayObject):DisplayObject {
@@ -59,8 +60,15 @@ public class Dom {
 			delete idList[ id ];
 	}
 
-	static public function getElementById( id:String ):DisplayObject {
-		return idList[ id ];
+	static public function getElementById( id:String, elem:DisplayObject = null ):DisplayObject {
+		var ret:DisplayObject = idList[ id ];
+		if ( !elem ) 
+			return ret;
+		else if( elem is DisplayObjectContainer 
+			&& DisplayObjectContainer(elem).contains(ret) )
+				return ret;
+		else
+			return null;
 	}
 
 	static public function getElementsByTagName( tagName:String, parent:DisplayObject = null, arr:Array = null ):Array {

@@ -18,9 +18,9 @@ package test
 			draw();
 		}
 
-		internal override function drawShape():void
+		internal override function drawShape(offsetX:Number, offsetY:Number):void
 		{
-			graphics.drawRoundRect(0, 0, width, height, ellipseWidth, ellipseHeight);
+			graphics.drawRoundRect(offsetX, offsetY, width, height, ellipseWidth, ellipseHeight);
 		}
 	}
 }

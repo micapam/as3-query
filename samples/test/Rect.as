@@ -2,9 +2,9 @@ package test
 {
 	public class Rect extends Base
 	{
-		internal override function drawShape():void
+		internal override function drawShape(offsetX:Number, offsetY:Number):void
 		{
-			graphics.drawRect(0, 0, width, height);
+			graphics.drawRect(offsetX, offsetY, width, height);
 		}
 	}
 }
