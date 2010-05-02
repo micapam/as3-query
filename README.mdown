@@ -1,0 +1,8 @@
+AS3 Query
+=========
+
+http://github.com/katalyst/as3-query
+
+AS3 Query is an ActionScript 3.0 port of [jQuery](http://jquery.com/).
+
+Based of a clone of the [SVN repository](http://www.libspark.org/svn/as3/as3Query/) by [nitoyon](http://tech.nitoyon.com/blog/2008/01/as3query_alpha.html).
